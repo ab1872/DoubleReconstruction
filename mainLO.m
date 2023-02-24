@@ -1,5 +1,8 @@
-N = 20; % poses
-V = 3; % rays per pose
+clear;
+clf;
+
+N = 5; % poses
+V = 10; % rays per pose
 theta = 10; % +- degrees
 Radius = 10;
 
@@ -12,7 +15,7 @@ pattern1 = [
 2, 2, 1, 1;
 2, 2, 1, 1;
 2, 2, 1, 1;
-];
+]';
 
 [gtEP, gttemperature] = GenerateEP(pattern1, 3, 1);
 
@@ -29,17 +32,8 @@ readings = ExtractReadings(length(gtEP), N, V, rays, angles, gtEP, gttemperature
 disp(readings');
 % Generate Estimator EPs
 
-pattern2 = [
-1, 1, 1, 1, 1, 1;
-1, 1, 1, 1, 1, 1;
-1, 1, 1, 1, 1, 1;
-1, 1, 1, 1, 1, 1;
-1, 1, 1, 1, 1, 1;
-1, 1, 1, 1, 1, 1;
-1, 1, 1, 1, 1, 1;
-1, 1, 1, 1, 1, 1;
-];
-[EP, ~] = GenerateEP(pattern2, 4.5, 1);
+pattern2 = ones(4,4);
+[EP, ~] = GenerateEP(pattern2, 3, 0.1);
 
 subplot(2,2,2);
 scatter(EP(:,1),EP(:,2));
@@ -50,7 +44,9 @@ axis equal
 
 
 %Estimate EPs
-temperatures = EstimateEPLO(length(EP), N, V, rays, angles, readings, EP);
+prior = EstimateEPLO(length(EP), N, V, rays, angles, readings, EP);
+prior = prior + rand(length(EP),1)/6;
+temperatures = EstimateEPTVD(length(EP), N, V, rays, angles, readings, EP, prior, .2, 0);
 subplot(2,2,3);
 
 scatter(EP(:,1),EP(:,2),25,temperatures,'filled');
@@ -74,4 +70,4 @@ hold on
 colorbar
 axis equal
 scatter(gtEP(:,1),gtEP(:,2));
-clim([0,100]);
+clim([0,50]);
